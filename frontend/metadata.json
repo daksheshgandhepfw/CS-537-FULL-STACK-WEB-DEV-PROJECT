@@ -1,0 +1,7 @@
+{
+    "name": "AI Mock Interviewer Pro",
+    "description": "A high-fidelity interview preparation platform that uses AI to simulate role-specific interviews, provide real-time feedback, and generate detailed performance reports.",
+    "requestFramePermissions": [
+        "microphone"
+    ]
+}
