@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { db } from './lib/db';
-import { Layout } from './components/Layout';
-import { Dashboard } from './pages/Dashboard';
-import { Setup } from './pages/Setup';
-import { Interview } from './pages/Interview';
-import { Report } from './pages/Report';
-import { Login } from './pages/Login';
+import { db } from '../lib/db';
+import { Layout } from '../components/Layout';
+import { Dashboard } from '../pages/Dashboard';
+import { Setup } from '../pages/Setup';
+import { Interview } from '../pages/Interview';
+import { Report } from '../pages/Report';
+import { Login } from '../pages/Login';
 
 const App: React.FC = () => {
   const [route, setRoute] = useState(window.location.hash || '#/dashboard');
