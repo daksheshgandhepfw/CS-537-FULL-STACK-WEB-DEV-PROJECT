@@ -14,11 +14,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
         <div className="flex h-screen bg-slate-50 overflow-hidden">
             {/* Sidebar */}
             <aside className="w-64 bg-slate-900 text-white flex flex-col">
-                <div className="p-6 border-b border-slate-800">
-                    <h1 className="text-xl font-bold flex items-center gap-2">
-                        <i className="fa-solid fa-microphone-lines text-indigo-400"></i>
-                        <span>Interviewer AI</span>
-                    </h1>
+                        <div className="p-6 border-b border-slate-800">
+                            <h1 className="text-xl font-bold flex items-center gap-2">
+                                <i className="fa-solid fa-microphone-lines text-indigo-400"></i>
+                                <span>Interviewer AI</span>
+                            </h1>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto no-scrollbar">
@@ -38,18 +38,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
                         <span>Logout</span>
                     </button>
                 </nav>
-
+                    
                 <div className="p-4 border-t border-slate-800">
-                    <div className="flex items-center gap-3 p-2">
-                        <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-lg">
-                            {user?.name?.[0]?.toUpperCase()}
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-medium truncate">{user?.name}</p>
-                            <p className="text-xs text-slate-400 truncate">{user?.email}</p>
-                        </div>
+                            <div className="flex items-center gap-3 p-2">
+                                <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-lg">
+                                    {user?.name?.[0]?.toUpperCase()}
+                                </div>
+                                <div className="flex-1 overflow-hidden">
+                                    <p className="text-sm font-medium truncate">{user?.name}</p>
+                                    <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                                </div>
+                            </div>
                     </div>
-                </div>
             </aside>
 
             {/* Main Content */}
