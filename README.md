@@ -40,3 +40,7 @@ Based on these inputs, the system conducts structured interviews covering both t
 The goal of AI Mock Interviewer is to make interview preparation personalized, structured, and measurable, enabling users to approach real interviews with greater confidence and readiness.
 
 
+
+##deleted the node files in backend
+
+
