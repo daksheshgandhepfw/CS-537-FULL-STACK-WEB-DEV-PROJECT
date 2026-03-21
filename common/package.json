@@ -1,0 +1,14 @@
+{
+  "name": "@aimock/common",
+  "version": "1.0.0",
+  "description": "Shared library for AI Mock Interviewer",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

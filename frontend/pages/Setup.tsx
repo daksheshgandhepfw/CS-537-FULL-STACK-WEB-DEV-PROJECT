@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { db } from '../lib/db';
-import { Difficulty, InterviewType, CompanyPack, InterviewSession } from '@aimock/common';
+import type { InterviewSession } from '@aimock/common';
+import { Difficulty, InterviewType, CompanyPack } from '@aimock/common';
 import { geminiService } from '../lib/geminiService';
 
 export const Setup: React.FC = () => {
@@ -46,7 +47,7 @@ export const Setup: React.FC = () => {
         turns: [],
       };
 
-      const savedSession = await db.saveSession(newSessionPayload as InterviewSession);
+      const savedSession = await db.saveSession(newSessionPayload as unknown as InterviewSession);
       window.location.hash = `#/interview/${savedSession.id}`;
     } catch (err) {
       console.error(err);

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../lib/db';
-import { InterviewSession, InterviewTurn } from '@aimock/common';
+import type { InterviewSession, InterviewTurn } from '@aimock/common';
 import { geminiService } from '../lib/geminiService';
 import { useAudioContext } from '../hooks/useAudioContext';
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
