@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { db } from '../lib/db';
-import { InterviewSession } from '@aimock/common';
+import type { InterviewSession } from '@aimock/common';
 
 export const Dashboard: React.FC = () => {
   const [sessions, setSessions] = useState<InterviewSession[]>([]);

@@ -9,7 +9,7 @@ app.get('/test-backend', (req, res) => {
   res.json({ status: 'ok', service: 'backend-skeleton' });
 });
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 app.listen(port, () => {
   console.log(`Backend running on port ${port}`);
 });

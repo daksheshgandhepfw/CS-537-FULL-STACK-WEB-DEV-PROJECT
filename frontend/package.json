@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aimock/common": "file:common",
+    "@aimock/common": "file:../common",
     "@google/genai": "^1.39.0",
     "classnames": "2.5.1",
     "prop-types": "15.8.1",
