@@ -40,6 +40,8 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
 
 
 
+  const startupRef = useRef(false);
+
   useEffect(() => {
     const fetchSession = async () => {
       const s = await db.getSessionById(id);
@@ -51,7 +53,10 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
         }
         setSession(s);
         setTimeLeft(s.duration * 60);
-        if (s.turns.length === 0) startInterview(s);
+        if (s.turns.length === 0 && !startupRef.current) {
+          startupRef.current = true;
+          startInterview(s);
+        }
       }
     };
     fetchSession();
@@ -69,15 +74,16 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
       const conductorRes = await geminiService.getNextQuestion(currentSession);
       const firstTurn: InterviewTurn = { id: Math.random().toString(36).substr(2, 9), role: 'ai', text: conductorRes.question, timestamp: Date.now() };
 
-      // Update local state
+      // Wait for audio to generate before showing text
+      await speak(conductorRes.question);
+
+      // Update local state and show text
       const updated = { ...currentSession, turns: [firstTurn], status: 'active' as const };
       setSession(updated);
 
       // Async save status + turn
       await db.saveSession({ ...currentSession, status: 'active' }); // Update status to active
       await db.addTurn(currentSession.id, firstTurn); // Add first turn
-
-      speak(conductorRes.question);
     } catch (err) {
       console.error(err);
     } finally {
@@ -132,12 +138,13 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
 
       const conductorRes = await geminiService.getNextQuestion(updatedWithUser);
       const aiTurn: InterviewTurn = { id: Math.random().toString(36).substr(2, 9), role: 'ai', text: conductorRes.question, timestamp: Date.now() };
-      const finalUpdate = { ...updatedWithUser, turns: [...updatedWithUser.turns, aiTurn] };
 
+      // Wait for audio to generate before showing text
+      await speak(conductorRes.question);
+
+      const finalUpdate = { ...updatedWithUser, turns: [...updatedWithUser.turns, aiTurn] };
       setSession(finalUpdate);
       await db.addTurn(session.id, aiTurn);
-
-      speak(conductorRes.question);
     } catch (err) {
       console.error(err);
     } finally {
@@ -154,14 +161,15 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
       const hint = await geminiService.getHint(lastAIQuestion, session.turns.map(t => `${t.role}: ${t.text}`).join('\n'));
       const hintTurn: InterviewTurn = { id: Math.random().toString(36).substr(2, 9), role: 'ai', text: `💡 Hint: ${hint}`, timestamp: Date.now() };
 
+      // Wait for audio to generate before showing text
+      await speak(hint);
+
       // Update local state
       const updated = { ...session, turns: [...session.turns, hintTurn] };
       setSession(updated);
 
       // Save turn
       await db.addTurn(session.id, hintTurn);
-
-      speak(hint);
     } catch (err) {
       console.error(err);
     } finally {
@@ -222,7 +230,15 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
             </div>
           </div>
         ))}
-        {isAITyping && <div className="flex justify-start"><div className="bg-white p-4 shadow-sm rounded-2xl animate-pulse">...</div></div>}
+        {isAITyping && (
+          <div className="flex justify-start">
+            <div className="bg-white px-5 py-4 shadow-sm rounded-2xl flex space-x-1.5 items-center h-[52px]">
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            </div>
+          </div>
+        )}
         <div ref={chatEndRef} />
       </div>
       <div className="p-4 border-t border-slate-100 bg-white">
