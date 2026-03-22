@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 // Load env vars if not already loaded
-dotenv.config({ path: path.join(__dirname, '../../.env.local') });
+dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,

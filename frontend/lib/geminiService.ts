@@ -6,7 +6,7 @@ import { CompanyPack } from "@aimock/common";
 // Safety check for process.env in various environments
 const getApiKey = () => {
   try {
-    return process.env.API_KEY || '';
+    return import.meta.env.VITE_API_KEY || '';
   } catch (e) {
     return '';
   }
