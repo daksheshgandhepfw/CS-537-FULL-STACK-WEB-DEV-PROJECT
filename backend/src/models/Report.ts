@@ -1,6 +1,6 @@
 import { pool } from '../db';
 
-import { Report } from '@aimock/common';
+import { Report } from 'aimock-common';
 
 export class ReportModel {
     private static mapRow(row: any): any {

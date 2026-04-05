@@ -1,4 +1,4 @@
-import type { InterviewSession, User, Report } from '@aimock/common';
+import type { InterviewSession, User, Report } from 'aimock-common';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5500/api';
 
