@@ -6,7 +6,7 @@ export const db = {
     // --- AUTH / USER ---
 
     signup: async (user: Omit<User, 'id'>) => {
-        const response = await fetch(`${API_URL}/auth/signup`, {
+        const response = await fetch(`${API_URL}api/auth/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(user), // { email, password, name }
@@ -27,7 +27,7 @@ export const db = {
     },
 
     login: async (creds: { email: string; password?: string }) => {
-        const response = await fetch(`${API_URL}/auth/login`, {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(creds),
@@ -103,7 +103,7 @@ export const db = {
         // If the ID is a valid Mongo ID, we update. 
 
         if (session.id) {
-            const response = await fetch(`${API_URL}/sessions/${session.id}`, {
+            const response = await fetch(`${API_URL}/api/sessions/${session.id}`, {
                 method: 'PATCH',
                 headers: db.getHeaders(),
                 body: JSON.stringify(session),
@@ -112,7 +112,7 @@ export const db = {
             return await response.json(); // returns updated session
         } else {
             // Create new
-            const response = await fetch(`${API_URL}/sessions`, {
+            const response = await fetch(`${API_URL}/api/sessions`, {
                 method: 'POST',
                 headers: db.getHeaders(),
                 body: JSON.stringify(session),
@@ -128,7 +128,7 @@ export const db = {
 
     // NEW: Specialized method for adding a turn
     addTurn: async (sessionId: string, turn: any) => {
-        const response = await fetch(`${API_URL}/sessions/${sessionId}/turns`, {
+        const response = await fetch(`${API_URL}/api/sessions/${sessionId}/turns`, {
             method: 'POST',
             headers: db.getHeaders(),
             body: JSON.stringify(turn),
@@ -147,7 +147,7 @@ export const db = {
         const token = localStorage.getItem('ai_interviewer_token');
         if (!token) throw new Error('Not authenticated');
 
-        const response = await fetch(`${API_URL}/sessions/${id}`, {
+        const response = await fetch(`${API_URL}/api/sessions/${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -165,7 +165,7 @@ export const db = {
         const user = db.getCurrentUser();
         if (!user) return [];
 
-        const response = await fetch(`${API_URL}/sessions?userId=${user.id}`, {
+        const response = await fetch(`${API_URL}/api/sessions?userId=${user.id}`, {
             headers: db.getHeaders(),
         });
         if (!response.ok) throw new Error('Failed to fetch sessions');
@@ -173,7 +173,7 @@ export const db = {
     },
 
     getSessionById: async (id: string): Promise<InterviewSession | undefined> => {
-        const response = await fetch(`${API_URL}/sessions/${id}`, {
+        const response = await fetch(`${API_URL}/api/sessions/${id}`, {
             headers: db.getHeaders(),
         });
         if (response.status === 404) return undefined;
@@ -183,7 +183,7 @@ export const db = {
 
     // --- REPORTS ---
     saveReport: async (report: Report) => {
-        const response = await fetch(`${API_URL}/reports`, {
+        const response = await fetch(`${API_URL}/api/reports`, {
             method: 'POST',
             headers: db.getHeaders(),
             body: JSON.stringify(report),
@@ -198,7 +198,7 @@ export const db = {
     },
 
     getReportBySessionId: async (sessionId: string): Promise<Report | undefined> => {
-        const response = await fetch(`${API_URL}/reports/${sessionId}`, {
+        const response = await fetch(`${API_URL}/api/reports/${sessionId}`, {
             headers: db.getHeaders(),
         });
         if (response.status === 404) return undefined;
@@ -212,7 +212,7 @@ export const db = {
 
         const token = localStorage.getItem('ai_interviewer_token');
 
-        const response = await fetch(`${API_URL}/resume/parse`, {
+        const response = await fetch(`${API_URL}/api/resume/parse`, {
             method: 'POST',
             headers: {
                 'Authorization': token ? `Bearer ${token}` : ''
