@@ -1,6 +1,6 @@
 import { pool } from '../db';
 
-import { User } from '@aimock/common';
+import { User } from 'aimock-common';
 
 export class UserModel {
     static async create(user: Omit<User, 'id'>): Promise<User> {
