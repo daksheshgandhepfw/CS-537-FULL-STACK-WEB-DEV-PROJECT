@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { db } from '../lib/db';
-import type { InterviewSession } from '@aimock/common';
-import { Difficulty, InterviewType, CompanyPack } from '@aimock/common';
+import type { InterviewSession } from 'aimock-common';
+import { Difficulty, InterviewType, CompanyPack } from 'aimock-common';
 import { geminiService } from '../lib/geminiService';
 
 export const Setup: React.FC = () => {

@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import type { InterviewPlan, InterviewSession, InterviewType } from "@aimock/common";
-import { CompanyPack } from "@aimock/common";
+import type { InterviewPlan, InterviewSession, InterviewType } from "aimock-common";
+import { CompanyPack } from "aimock-common";
 
 // Safety check for process.env in various environments
 const getApiKey = () => {

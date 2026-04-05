@@ -1,6 +1,6 @@
 import { pool } from '../db';
 
-import { InterviewSession, InterviewType, Difficulty, CompanyPack } from '@aimock/common';
+import { InterviewSession, InterviewType, Difficulty, CompanyPack } from 'aimock-common';
 
 export class InterviewSessionModel {
     static async create(session: Omit<InterviewSession, 'id' | 'createdAt'>): Promise<any> {

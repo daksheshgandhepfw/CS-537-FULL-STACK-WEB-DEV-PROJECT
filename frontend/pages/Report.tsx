@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { db } from '../lib/db';
-import type { Report as ReportType, InterviewSession } from '@aimock/common';
+import type { Report as ReportType, InterviewSession } from 'aimock-common';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export const Report: React.FC<{ id: string }> = ({ id }) => {
