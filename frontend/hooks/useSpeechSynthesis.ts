@@ -44,7 +44,19 @@ export const useSpeechSynthesis = (initAudio: () => Promise<AudioContext | null>
         } catch (e) {
             console.warn('TTS output blocked or failed', e);
         }
+    }
+    const stop = () => {
+        if (activeSourceRef.current) {
+            try {
+                activeSourceRef.current.stop();
+                activeSourceRef.current.disconnect();
+            } catch (e) {
+                // Ignore if it was already stopped
+            }
+            activeSourceRef.current = null;
+        }
     };
 
-    return { speak, voiceEnabled, setVoiceEnabled };
-};
+    return { speak, stop, voiceEnabled, setVoiceEnabled }
+
+}

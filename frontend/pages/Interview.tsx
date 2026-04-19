@@ -17,7 +17,7 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
   const startupRef = useRef(false);
 
   const { initAudio, decodeAudioData, decodeBase64 } = useAudioContext();
-  const { speak, voiceEnabled, setVoiceEnabled } = useSpeechSynthesis(initAudio, decodeAudioData, decodeBase64);
+  const { speak, stop, voiceEnabled, setVoiceEnabled } = useSpeechSynthesis(initAudio, decodeAudioData, decodeBase64);
   const { isRecording, toggleRecording, stopRecording } = useSpeechRecognition((transcript) => {
     setInput(prev => prev + (prev ? ' ' : '') + transcript);
   });
@@ -169,6 +169,9 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
   const endInterview = async (currentSession: InterviewSession) => {
     setIsAITyping(true);
     try {
+      // Stop any ongoing audio
+      stop();
+
       const finalUpdate = { ...currentSession, status: 'completed' as const };
       const reportData = await geminiService.generateFinalReport(finalUpdate);
 
