@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../lib/db';
 import type { InterviewSession } from 'aimock-common';
 import { Difficulty, InterviewType, CompanyPack } from 'aimock-common';
@@ -7,6 +7,7 @@ import { geminiService } from '../lib/geminiService';
 
 export const Setup: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [scheduledId, setScheduledId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     jobTitle: '',
     jobDescription: '',
@@ -17,6 +18,24 @@ export const Setup: React.FC = () => {
     difficulty: Difficulty.MEDIUM,
     duration: 30
   });
+
+  useEffect(() => {
+    const pending = sessionStorage.getItem('pendingScheduledInterview');
+    if (pending) {
+      try {
+        const inv = JSON.parse(pending);
+        setScheduledId(inv.id);
+        setFormData(prev => ({
+          ...prev,
+          companyName: inv.companyName || prev.companyName,
+          jobTitle: inv.jobTitle || prev.jobTitle,
+          jobDescription: inv.jobDescription
+        }));
+      } catch (e) {
+        console.error("Failed to parse pending interview");
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +60,7 @@ export const Setup: React.FC = () => {
 
       const newSessionPayload = {
         userId: user.id,
+        scheduledInterviewId: scheduledId || undefined,
         ...formData,
         status: 'planned' as const,
         plan,
@@ -48,6 +68,7 @@ export const Setup: React.FC = () => {
       };
 
       const savedSession = await db.saveSession(newSessionPayload as unknown as InterviewSession);
+      sessionStorage.removeItem('pendingScheduledInterview');
       window.location.hash = `#/interview/${savedSession.id}`;
     } catch (err) {
       console.error(err);

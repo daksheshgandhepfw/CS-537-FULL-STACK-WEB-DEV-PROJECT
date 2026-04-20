@@ -226,5 +226,51 @@ export const db = {
         }
         const data = await response.json();
         return data.text;
+    },
+
+    // --- SCHEDULED INTERVIEWS ---
+    createScheduledInterview: async (data: Omit<import('aimock-common').ScheduledInterview, 'id' | 'createdAt'>) => {
+        const response = await fetch(`${API_URL}/scheduled-interviews`, {
+            method: 'POST',
+            headers: db.getHeaders(),
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Failed to create scheduled interview');
+        return await response.json();
+    },
+
+    getScheduledInterviews: async (): Promise<import('aimock-common').ScheduledInterview[]> => {
+        const user = db.getCurrentUser();
+        if (!user) return [];
+        const response = await fetch(`${API_URL}/scheduled-interviews?userId=${user.id}`, {
+            headers: db.getHeaders(),
+        });
+        if (!response.ok) throw new Error('Failed to fetch scheduled interviews');
+        return await response.json();
+    },
+
+    deleteScheduledInterview: async (id: string) => {
+        const response = await fetch(`${API_URL}/scheduled-interviews/${id}`, {
+            method: 'DELETE',
+            headers: db.getHeaders(),
+        });
+        if (!response.ok) throw new Error('Failed to delete scheduled interview');
+        return true;
+    },
+
+    getScheduledInterviewReadiness: async (id: string): Promise<any> => {
+        const response = await fetch(`${API_URL}/scheduled-interviews/${id}/readiness`, {
+            headers: db.getHeaders(),
+        });
+        if (!response.ok) throw new Error('Failed to fetch readiness report');
+        return await response.json();
+    },
+
+    getScheduledInterviewSessions: async (id: string): Promise<import('aimock-common').InterviewSession[]> => {
+        const response = await fetch(`${API_URL}/scheduled-interviews/${id}/sessions`, {
+            headers: db.getHeaders(),
+        });
+        if (!response.ok) throw new Error('Failed to fetch mock sessions');
+        return await response.json();
     }
 };

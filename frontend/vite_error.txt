@@ -1,0 +1,94 @@
+﻿node.exe : [31merror 
+when starting dev server:
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (  
+  [31merror when starti   
+ ng dev server::String    
+) [], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+Error: Failed to resolve 
+entry for package 
+"@aimock/common". The 
+package may have 
+incorrect 
+main/module/exports 
+specified in its 
+package.json.
+    at 
+packageEntryFailure (file:
+///C:/Users/chinn/Desktop/
+CS-537-FULL-STACK-WEB-DEV-
+PROJECT/frontend/node_modu
+les/vite/dist/node/chunks/
+dep-D4NMHUTW.js:16198:15)
+    at 
+resolvePackageEntry (file:
+///C:/Users/chinn/Desktop/
+CS-537-FULL-STACK-WEB-DEV-
+PROJECT/frontend/node_modu
+les/vite/dist/node/chunks/
+dep-D4NMHUTW.js:16195:3)
+    at tryNodeResolve (fil
+e:///C:/Users/chinn/Deskto
+p/CS-537-FULL-STACK-WEB-DE
+V-PROJECT/frontend/node_mo
+dules/vite/dist/node/chunk
+s/dep-D4NMHUTW.js:16060:18
+)
+    at ResolveIdContext.re
+solveId (file:///C:/Users/
+chinn/Desktop/CS-537-FULL-
+STACK-WEB-DEV-PROJECT/fron
+tend/node_modules/vite/dis
+t/node/chunks/dep-D4NMHUTW
+.js:15831:19)
+    at EnvironmentPluginCo
+ntainer.resolveId (file://
+/C:/Users/chinn/Desktop/CS
+-537-FULL-STACK-WEB-DEV-PR
+OJECT/frontend/node_module
+s/vite/dist/node/chunks/de
+p-D4NMHUTW.js:42242:17)
+    at async resolve (file
+:///C:/Users/chinn/Desktop
+/CS-537-FULL-STACK-WEB-DEV
+-PROJECT/frontend/node_mod
+ules/vite/dist/node/chunks
+/dep-D4NMHUTW.js:42831:12)
+    at async file:///C:/Us
+ers/chinn/Desktop/CS-537-F
+ULL-STACK-WEB-DEV-PROJECT/
+frontend/node_modules/vite
+/dist/node/chunks/dep-D4NM
+HUTW.js:42849:22
+    at async file:///C:/Us
+ers/chinn/Desktop/CS-537-F
+ULL-STACK-WEB-DEV-PROJECT/
+frontend/node_modules/vite
+/dist/node/chunks/dep-D4NM
+HUTW.js:49081:16
+    at async file:///C:/Us
+ers/chinn/Desktop/CS-537-F
+ULL-STACK-WEB-DEV-PROJECT/
+frontend/node_modules/vite
+/dist/node/chunks/dep-D4NM
+HUTW.js:14614:14
+    at async addManuallyIn
+cludedOptimizeDeps (file:/
+//C:/Users/chinn/Desktop/C
+S-537-FULL-STACK-WEB-DEV-P
+ROJECT/frontend/node_modul
+es/vite/dist/node/chunks/d
+ep-D4NMHUTW.js:15176:23)[
+39m

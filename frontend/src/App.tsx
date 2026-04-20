@@ -7,6 +7,7 @@ import { Setup } from '../pages/Setup';
 import { Interview } from '../pages/Interview';
 import { Report } from '../pages/Report';
 import { Login } from '../pages/Login';
+import { Calendar } from '../pages/Calendar';
 
 const App: React.FC = () => {
   const [route, setRoute] = useState(window.location.hash || '#/dashboard');
@@ -35,6 +36,8 @@ const App: React.FC = () => {
         return <Dashboard />;
       case 'setup':
         return <Setup />;
+      case 'calendar':
+        return <Calendar />;
       case 'interview':
         return id ? <Interview id={id} /> : <Dashboard />;
       case 'report':
