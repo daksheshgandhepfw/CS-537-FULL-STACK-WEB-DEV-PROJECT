@@ -16,7 +16,8 @@
     "react-dom": "18.2.0",
     "react-is": "18.2.0",
     "recharts": "2.12.7",
-    "aimock-common":"1.0.0"
+    "aimock-common": "1.0.1",
+    "@openrouter/sdk": "*"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

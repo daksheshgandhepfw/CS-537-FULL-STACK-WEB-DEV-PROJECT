@@ -1,6 +1,6 @@
 {
-  "name": "@aimock/common",
-  "version": "1.0.0",
+  "name": "aimock-common",
+  "version": "1.0.1",
   "description": "Shared library for AI Mock Interviewer",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
