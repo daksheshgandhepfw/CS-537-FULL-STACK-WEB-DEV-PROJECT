@@ -45,7 +45,7 @@ export const useSpeechSynthesis = (initAudio: () => Promise<AudioContext | null>
 
             const base64 = await geminiService.generateSpeech(text);
             if (base64) {
-                const audioBuffer = await decodeAudioData(decodeBase64(base64), ctx, 24000, 1);
+                const audioBuffer = await decodeAudioData(decodeBase64(base64), ctx);
                 const source = ctx.createBufferSource();
                 source.buffer = audioBuffer;
                 source.connect(ctx.destination);

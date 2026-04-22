@@ -113,6 +113,9 @@ export class ScheduledInterviewModel {
 
         const allWeaknesses = new Set<string>();
         const allStrengths = new Set<string>();
+        const allStudyPlan = new Set<string>();
+        const allStarExamples: any[] = [];
+        const summaries: string[] = [];
 
         let validScoresCount = 0;
 
@@ -132,21 +135,33 @@ export class ScheduledInterviewModel {
             if (Array.isArray(r.strengths)) {
                 r.strengths.forEach((s: string) => allStrengths.add(s));
             }
+            if (Array.isArray(r.study_plan)) {
+                r.study_plan.forEach((s: string) => allStudyPlan.add(s));
+            }
+            if (Array.isArray(r.star_examples)) {
+                allStarExamples.push(...r.star_examples);
+            }
+            if (r.summary) {
+                summaries.push(r.summary);
+            }
         });
 
         if (validScoresCount === 0) return null;
 
         return {
             interviewCount: reports.length,
-            averageScores: {
-                communication: Math.round(totalCommunication / validScoresCount),
-                role_fit: Math.round(totalRoleFit / validScoresCount),
-                technical_depth: Math.round(totalTechnical / validScoresCount),
-                problem_solving: Math.round(totalProblem / validScoresCount),
-                company_fit: Math.round(totalCompany / validScoresCount)
+            summary: summaries.length > 0 ? summaries[0] : "Cumulative progress report across all sessions.",
+            overallScores: {
+                communication: totalCommunication / validScoresCount,
+                role_fit: totalRoleFit / validScoresCount,
+                technical_depth: totalTechnical / validScoresCount,
+                problem_solving: totalProblem / validScoresCount,
+                company_fit: totalCompany / validScoresCount
             },
-            aggregatedWeaknesses: Array.from(allWeaknesses),
-            aggregatedStrengths: Array.from(allStrengths)
+            weaknesses: Array.from(allWeaknesses),
+            strengths: Array.from(allStrengths),
+            studyPlan: Array.from(allStudyPlan).slice(0, 8),
+            starExamples: allStarExamples.slice(0, 5) // Limit to top examples
         };
     }
 
