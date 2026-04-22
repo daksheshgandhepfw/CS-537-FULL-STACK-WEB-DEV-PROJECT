@@ -26,11 +26,32 @@ const connectDB = async () => {
             );
         `);
 
+        // Initialize Scheduled Interviews Table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS scheduled_interviews (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                company_name VARCHAR(255),
+                job_title VARCHAR(255),
+                job_description TEXT NOT NULL,
+                scheduled_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        
+        try {
+            await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS company_name VARCHAR(255);`);
+            await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS job_title VARCHAR(255);`);
+        } catch (e) {
+            console.log('Columns company_name/job_title already exist or could not be added');
+        }
+
         // Initialize Sessions Table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS interview_sessions (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id),
+                scheduled_interview_id INTEGER REFERENCES scheduled_interviews(id) ON DELETE CASCADE,
                 job_title VARCHAR(255),
                 job_description TEXT,
                 resume TEXT,
@@ -45,6 +66,13 @@ const connectDB = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        
+        // Ensure scheduled_interview_id exists if the table was already created
+        try {
+            await pool.query(`ALTER TABLE interview_sessions ADD COLUMN IF NOT EXISTS scheduled_interview_id INTEGER REFERENCES scheduled_interviews(id) ON DELETE CASCADE;`);
+        } catch (e) {
+            console.log('Column scheduled_interview_id already exists or could not be added');
+        }
 
         // Initialize Turns Table
         await pool.query(`

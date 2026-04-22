@@ -26,6 +26,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
                         <i className="fa-solid fa-chart-line w-5 text-slate-400"></i>
                         <span>Dashboard</span>
                     </a>
+                    <a href="#/calendar" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
+                        <i className="fa-solid fa-calendar w-5 text-slate-400"></i>
+                        <span>Calendar</span>
+                    </a>
                     <a href="#/setup" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors">
                         <i className="fa-solid fa-plus w-5 text-slate-400"></i>
                         <span>New Interview</span>
