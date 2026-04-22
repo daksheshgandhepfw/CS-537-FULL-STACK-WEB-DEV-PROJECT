@@ -1,10 +1,19 @@
-
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import type { InterviewPlan, InterviewSession, InterviewType } from "aimock-common";
 import { CompanyPack } from "aimock-common";
 
-// Safety check for process.env in various environments
+const OPENROUTER_URL = "https://openrouter.ai/api/v1";
+const DEFAULT_MODEL = "google/gemini-2.0-flash-001";
+
 const getApiKey = () => {
+  try {
+    return import.meta.env.VITE_OPENROUTER_API_KEY || import.meta.env.VITE_API_KEY || '';
+  } catch (e) {
+    return '';
+  }
+};
+
+const getGoogleApiKey = () => {
   try {
     return import.meta.env.VITE_API_KEY || '';
   } catch (e) {
@@ -12,7 +21,39 @@ const getApiKey = () => {
   }
 };
 
-const ai = new GoogleGenAI({ apiKey: getApiKey() });
+const ai = new GoogleGenAI({ apiKey: getGoogleApiKey() });
+
+interface OpenRouterRequest {
+  model?: string;
+  messages: any[];
+  response_format?: { type: string };
+  modalities?: string[];
+  audio?: { voice: string; format: string };
+}
+
+const callOpenRouter = async (payload: OpenRouterRequest) => {
+  const apiKey = getApiKey();
+  const response = await fetch(`${OPENROUTER_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": window.location.origin,
+      "X-Title": "AI Mock Interviewer"
+    },
+    body: JSON.stringify({
+      model: payload.model || DEFAULT_MODEL,
+      ...payload
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || "OpenRouter Request Failed");
+  }
+
+  return response.json();
+};
 
 const COMPANY_STRATEGIES = {
   [CompanyPack.AMAZON]: "Prioritize the 16 Leadership Principles (Ownership, Bias for Action, etc.). Focus on the 'BAR' - Behavioral questions that require deep digging using the STAR method.",
@@ -41,46 +82,21 @@ export const geminiService = {
 
       Company Specific Strategy: ${strategy}
 
-      Task:
-      1. Extract 5-7 key skills required.
-      2. Identify 2-3 candidate gaps based on resume vs JD.
-      3. Create 5-8 structured questions.
-      
-      Return JSON only.
+      Return JSON only with this structure:
+      {
+        "sections": ["string"],
+        "questions": [{ "id": "uuid", "section": "string", "questionText": "string", "intent": "string", "skillTargeted": ["string"] }],
+        "skillsRequired": ["string"],
+        "candidateGaps": ["string"]
+      }
     `;
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              sections: { type: Type.ARRAY, items: { type: Type.STRING } },
-              questions: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    id: { type: Type.STRING },
-                    section: { type: Type.STRING },
-                    questionText: { type: Type.STRING },
-                    intent: { type: Type.STRING },
-                    skillTargeted: { type: Type.ARRAY, items: { type: Type.STRING } }
-                  },
-                  required: ["id", "section", "questionText", "intent", "skillTargeted"]
-                }
-              },
-              skillsRequired: { type: Type.ARRAY, items: { type: Type.STRING } },
-              candidateGaps: { type: Type.ARRAY, items: { type: Type.STRING } }
-            },
-            required: ["sections", "questions", "skillsRequired", "candidateGaps"]
-          }
-        }
+      const result = await callOpenRouter({
+        messages: [{ role: "system", content: prompt + "\nReturn JSON only." }],
+        response_format: { type: "json_object" }
       });
-      return JSON.parse(response.text || '{}');
+      return JSON.parse(result.choices[0].message.content || '{}');
     } catch (e) {
       console.error("Plan Generation Failed", e);
       throw e;
@@ -95,31 +111,18 @@ export const geminiService = {
       You are a senior interviewer at ${session.companyName}. Strategy: ${strategy}
       Difficulty: ${session.difficulty}. Plan: ${JSON.stringify(session.plan)}
       Guidelines: Ask ONE question. Use follow-ups if vague. Don't reveal rubric.
+      Return JSON only: { "question": "string" }
     `;
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: `Conversation:\n${pastTurns}\n\nProvide the next interviewer turn in JSON.`,
-        config: {
-          systemInstruction: systemPrompt,
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              question: { type: Type.STRING },
-              question_type: { type: Type.STRING },
-              skill_targeted: { type: Type.ARRAY, items: { type: Type.STRING } },
-              expected_signal: { type: Type.ARRAY, items: { type: Type.STRING } },
-              followup_if_needed: { type: Type.ARRAY, items: { type: Type.STRING } },
-              stop_condition: { type: Type.STRING },
-              ui_tone: { type: Type.STRING }
-            },
-            required: ["question"]
-          }
-        }
+      const result = await callOpenRouter({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Conversation:\n${pastTurns}\n\nProvide the next interviewer turn in JSON.` }
+        ],
+        response_format: { type: "json_object" }
       });
-      return JSON.parse(response.text || '{}');
+      return JSON.parse(result.choices[0].message.content || '{}');
     } catch (e) {
       console.error("Next Question Generation Failed", e);
       throw e;
@@ -128,32 +131,11 @@ export const geminiService = {
 
   async evaluateTurn(question: string, answer: string): Promise<any> {
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: `Q: ${question}\nA: ${answer}\nScore 1-5 across categories.`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              scores: {
-                type: Type.OBJECT,
-                properties: {
-                  communication: { type: Type.NUMBER },
-                  role_fit: { type: Type.NUMBER },
-                  technical_depth: { type: Type.NUMBER },
-                  problem_solving: { type: Type.NUMBER },
-                  company_fit: { type: Type.NUMBER }
-                }
-              },
-              overall_score: { type: Type.NUMBER },
-              feedback_bullets: { type: Type.ARRAY, items: { type: Type.STRING } },
-              improvement_suggestions: { type: Type.ARRAY, items: { type: Type.STRING } }
-            }
-          }
-        }
+      const result = await callOpenRouter({
+        messages: [{ role: "user", content: `Q: ${question}\nA: ${answer}\nScore 1-5. Return JSON: { "scores": { "communication": 0, "role_fit": 0, "technical_depth": 0, "problem_solving": 0, "company_fit": 0 }, "feedback_bullets": [], "improvement_suggestions": [] }` }],
+        response_format: { type: "json_object" }
       });
-      return JSON.parse(response.text || '{}');
+      return JSON.parse(result.choices[0].message.content || '{}');
     } catch (e) {
       console.warn("Evaluation failed", e);
       return null;
@@ -162,11 +144,10 @@ export const geminiService = {
 
   async getHint(question: string, transcript: string): Promise<string> {
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: `Question: ${question}\nTranscript: ${transcript}\nProvide a brief hint (<30 words).`
+      const result = await callOpenRouter({
+        messages: [{ role: "user", content: `Question: ${question}\nTranscript: ${transcript}\nProvide a brief hint (<30 words).` }]
       });
-      return response.text || "Focus on specifics.";
+      return result.choices[0].message.content || "Focus on specifics.";
     } catch (e) {
       return "Try focusing on a real-world example from your past.";
     }
@@ -174,17 +155,12 @@ export const geminiService = {
 
   async generateSpeech(text: string): Promise<string> {
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-preview-tts",
-        contents: [{ parts: [{ text: `Speak clearly: ${text}` }] }],
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } },
-          },
-        },
+      const result = await callOpenRouter({
+        messages: [{ role: "user", content: `Speak clearly: ${text}` }],
+        modalities: ["text", "audio"],
+        audio: { voice: "alloy", format: "wav" }
       });
-      return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || '';
+      return result.choices[0].message.audio?.data || '';
     } catch (e) {
       console.error("TTS failed", e);
       return '';
@@ -194,26 +170,11 @@ export const geminiService = {
   async generateFinalReport(session: InterviewSession): Promise<any> {
     const transcript = session.turns.map(t => `${t.role}: ${t.text}`).join('\n');
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: `Analyze transcript:\n${transcript}`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              summary: { type: Type.STRING },
-              strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-              weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-              redFlags: { type: Type.ARRAY, items: { type: Type.STRING } },
-              starExamples: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { question: { type: Type.STRING }, answer: { type: Type.STRING } } } },
-              studyPlan: { type: Type.ARRAY, items: { type: Type.STRING } },
-              overallScores: { type: Type.OBJECT, properties: { communication: { type: Type.NUMBER }, role_fit: { type: Type.NUMBER }, technical_depth: { type: Type.NUMBER }, problem_solving: { type: Type.NUMBER }, company_fit: { type: Type.NUMBER } } }
-            }
-          }
-        }
+      const result = await callOpenRouter({
+        messages: [{ role: "user", content: `Analyze transcript:\n${transcript}\nReturn JSON with EXACT keys: { "summary": "string", "strengths": [], "weaknesses": [], "redFlags": [], "starExamples": [{ "question": "string", "answer": "string" }], "studyPlan": [], "overallScores": { "communication": 0, "role_fit": 0, "technical_depth": 0, "problem_solving": 0, "company_fit": 0 } }` }],
+        response_format: { type: "json_object" }
       });
-      return JSON.parse(response.text || '{}');
+      return JSON.parse(result.choices[0].message.content || '{}');
     } catch (e) {
       console.error("Report Synthesis Failed", e);
       throw e;

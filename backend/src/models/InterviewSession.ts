@@ -13,13 +13,14 @@ export class InterviewSessionModel {
         const result = await pool.query(
             `INSERT INTO interview_sessions 
             (user_id, job_title, job_description, resume, company_name, company_pack, 
-             type, difficulty, duration, status, plan, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+             type, difficulty, duration, status, plan, scheduled_interview_id, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
             RETURNING *`,
             [
                 userId, jobTitle, jobDescription, resume, companyName,
                 companyPack, type, difficulty, duration, status,
-                JSON.stringify(plan || {})
+                JSON.stringify(plan || {}),
+                session.scheduledInterviewId || null
             ]
         );
         const newSession = result.rows[0];

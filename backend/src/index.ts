@@ -7,6 +7,7 @@ import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/auth';
 import reportRoutes from './routes/reportRoutes';
 import resumeRoutes from './routes/resumeRoutes';
+import scheduledInterviewRoutes from './routes/scheduledInterviewRoutes';
 import path from 'path';
 
 // Load env from root
@@ -32,6 +33,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/resume', resumeRoutes);
+app.use('/api/scheduled-interviews', scheduledInterviewRoutes);
 
 app.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);

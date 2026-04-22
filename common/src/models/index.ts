@@ -9,6 +9,16 @@ export interface User {
     created_at?: Date;
 }
 
+export interface ScheduledInterview {
+    id: string;
+    userId: string | number;
+    companyName: string;
+    jobTitle: string;
+    jobDescription: string;
+    scheduledAt: string | Date;
+    createdAt?: Date;
+}
+
 export interface InterviewPlanQuestion {
     id: string;
     section: string;
@@ -45,6 +55,7 @@ export interface InterviewTurn {
 export interface InterviewSession {
     id: string;
     userId: string | number;
+    scheduledInterviewId?: string | number;
     jobTitle: string;
     jobDescription: string;
     resume: string;
