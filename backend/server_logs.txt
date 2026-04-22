@@ -1,0 +1,23 @@
+
+> backend@1.0.0 dev
+> ts-node-dev --respawn --transpile-only src/index.ts
+
+[INFO] 11:36:31 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+Error: listen EADDRINUSE: address already in use :::5500
+    at Server.setupListenHandle [as _listen2] (node:net:1948:16)
+    at listenInCluster (node:net:2005:12)
+    at Server.listen (node:net:2110:7)
+    at app.listen (C:\Users\chinn\Desktop\CS-537-FULL-STACK-WEB-DEV-PROJECT\backend\node_modules\express\lib\application.js:635:24)
+    at Object.<anonymous> (C:\Users\chinn\Desktop\CS-537-FULL-STACK-WEB-DEV-PROJECT\backend\src\index.ts:38:5)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1812:14)
+    at Module._compile (C:\Users\chinn\Desktop\CS-537-FULL-STACK-WEB-DEV-PROJECT\backend\node_modules\source-map-support\source-map-support.js:521:25)
+    at Module.m._compile (C:\Users\chinn\AppData\Local\Temp\ts-node-dev-hook-1591274400794095.js:69:33)
+    at node:internal/modules/cjs/loader:1943:10
+    at require.extensions..jsx.require.extensions..js (C:\Users\chinn\AppData\Local\Temp\ts-node-dev-hook-1591274400794095.js:114:20)
+    at require.extensions.<computed> (C:\Users\chinn\AppData\Local\Temp\ts-node-dev-hook-1591274400794095.js:71:20)
+    at Object.nodeDevHook [as .ts] (C:\Users\chinn\Desktop\CS-537-FULL-STACK-WEB-DEV-PROJECT\backend\node_modules\ts-node-dev\lib\hook.js:63:13)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1556:12)
+[ERROR] 11:36:32 Error: listen EADDRINUSE: address already in use :::5500

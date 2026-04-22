@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/db';
-import type { ScheduledInterview, InterviewSession } from 'aimock-common';
+import type { ScheduledInterview, InterviewSession, Report as ReportType } from 'aimock-common';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export const Calendar: React.FC = () => {
     const [interviews, setInterviews] = useState<ScheduledInterview[]>([]);
     const [view, setView] = useState<'grid' | 'agenda'>('agenda');
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showReportId, setShowReportId] = useState<string | null>(null);
     
     // New Interview state
     const [date, setDate] = useState('');
@@ -107,31 +109,166 @@ export const Calendar: React.FC = () => {
 
     const renderReadiness = (id: string) => {
         const report = reports[id];
-        if (!report) return null;
-        
-        return (
-            <div className="mt-4 p-5 bg-gradient-to-br from-indigo-900/40 to-slate-900 rounded-xl border border-indigo-500/30">
-                <h4 className="text-sm font-semibold text-indigo-300 mb-4 flex items-center gap-2">
-                    <i className="fa-solid fa-chart-pie"></i> Aggregated Readiness ({report.interviewCount} sessions)
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                    {Object.entries(report.averageScores).map(([key, val]: any) => (
-                        <div key={key} className="text-center bg-slate-950/50 p-2 rounded-lg border border-slate-800">
-                            <div className="text-2xl font-black text-white">{val}/5</div>
-                            <div className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">{key.replace('_', ' ')}</div>
+        const inv = interviews.find(i => i.id === id);
+        if (!report || report.interviewCount === 0 || !inv) return null;
+
+        const scoreData = [
+            { name: 'Comm.', val: report.overallScores.communication },
+            { name: 'Role Fit', val: report.overallScores.role_fit },
+            { name: 'Tech', val: report.overallScores.technical_depth },
+            { name: 'Problem', val: report.overallScores.problem_solving },
+            { name: 'Comp.', val: report.overallScores.company_fit },
+        ];
+        const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+
+        if (showReportId !== id) {
+            return (
+                <div className="mt-4 p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                            {report.interviewCount}
                         </div>
-                    ))}
-                </div>
-                {report.aggregatedWeaknesses?.length > 0 && (
-                    <div className="mt-4">
-                        <h5 className="text-xs font-semibold text-red-400 mb-2 uppercase tracking-wide">Recurring Growth Areas:</h5>
-                        <ul className="list-disc pl-5 text-sm text-slate-300 space-y-1">
-                            {report.aggregatedWeaknesses.slice(0, 3).map((w: string, i: number) => (
-                                <li key={i}>{w}</li>
-                            ))}
-                        </ul>
+                        <div>
+                            <div className="text-sm font-bold text-slate-800">Mock Data Available</div>
+                            <div className="text-xs text-slate-500">Based on {report.interviewCount} practice sessions</div>
+                        </div>
                     </div>
-                )}
+                    <button 
+                        onClick={() => setShowReportId(id)}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
+                    >
+                        View Progress Report
+                    </button>
+                </div>
+            );
+        }
+
+        return (
+            <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm p-4 md:p-10 flex items-start justify-center">
+                <div className="bg-slate-50 w-full max-w-5xl rounded-[2.5rem] shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
+                    {/* Close Button */}
+                    <button 
+                        onClick={() => setShowReportId(null)}
+                        className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors z-10"
+                    >
+                        <i className="fa-solid fa-xmark text-xl"></i>
+                    </button>
+
+                    <div className="p-8 md:p-12">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+                            <div>
+                                <h2 className="text-3xl font-black text-slate-900 leading-tight">Cumulative Progress</h2>
+                                <p className="text-slate-500 mt-2 flex items-center gap-2">
+                                    <span className="font-bold text-indigo-600">{inv.jobTitle}</span> 
+                                    <span className="text-slate-300">•</span> 
+                                    <span>{inv.companyName} Preparation</span>
+                                </p>
+                            </div>
+                            <div className="bg-white px-6 py-3 rounded-2xl border border-slate-200 shadow-sm self-start">
+                                <div className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1">Overall Readiness</div>
+                                <div className="text-3xl font-black text-indigo-600">
+                                    {((Object.values(report.overallScores) as number[]).reduce((a: number, b: number) => a + b, 0) / 5).toFixed(1)}/5
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                            {/* Sidebar Summary */}
+                            <div className="lg:col-span-1 space-y-8">
+                                <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Score Breakdown</h3>
+                                    <div className="h-64 w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={scoreData} layout="vertical" margin={{ left: 10 }}>
+                                                <XAxis type="number" hide domain={[0, 5]} />
+                                                <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={80} />
+                                                <Tooltip cursor={{ fill: 'transparent' }} />
+                                                <Bar dataKey="val" radius={[0, 6, 6, 0]}>
+                                                    {scoreData.map((_, index) => (
+                                                        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                <div className="bg-indigo-900 text-white p-8 rounded-[2rem] shadow-xl shadow-indigo-100 flex flex-col gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-xl">
+                                        <i className="fa-solid fa-quote-left text-indigo-300"></i>
+                                    </div>
+                                    <h3 className="font-bold text-lg">AI Performance Insight</h3>
+                                    <p className="text-sm text-indigo-100 leading-relaxed italic opacity-90">
+                                        "{report.summary}"
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Main Content */}
+                            <div className="lg:col-span-2 space-y-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="bg-white p-8 rounded-3xl border border-emerald-100 shadow-sm relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl text-emerald-600">
+                                            <i className="fa-solid fa-circle-check"></i>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-emerald-600 font-black mb-6">
+                                            <span className="text-xs uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded">Recurring</span>
+                                            <span>Strengths</span>
+                                        </div>
+                                        <ul className="space-y-4">
+                                            {report.strengths.slice(0, 5).map((s: string, i: number) => (
+                                                <li key={i} className="text-sm text-slate-600 flex gap-3">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 shrink-0"></span> {s}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="bg-white p-8 rounded-3xl border border-rose-100 shadow-sm relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl text-rose-600">
+                                            <i className="fa-solid fa-triangle-exclamation"></i>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-rose-600 font-black mb-6">
+                                            <span className="text-xs uppercase tracking-widest bg-rose-50 px-2 py-1 rounded">Action Needed</span>
+                                            <span>Growth Gaps</span>
+                                        </div>
+                                        <ul className="space-y-4">
+                                            {report.weaknesses.slice(0, 5).map((w: string, i: number) => (
+                                                <li key={i} className="text-sm text-slate-600 flex gap-3">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-2 shrink-0"></span> {w}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                                    <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-500 flex items-center justify-center">
+                                            <i className="fa-solid fa-star"></i>
+                                        </div>
+                                        Top Learning Moments
+                                    </h3>
+                                    <div className="space-y-6">
+                                        {report.starExamples.map((ex: any, i: number) => (
+                                            <div key={i} className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100 group hover:border-indigo-200 transition-colors">
+                                                <p className="text-sm font-bold text-slate-800 mb-3 flex gap-2">
+                                                    <span className="text-indigo-400 font-mono">Q.</span>
+                                                    {ex.question}
+                                                </p>
+                                                <div className="pl-6 border-l-2 border-indigo-100">
+                                                    <p className="text-sm text-slate-600 italic leading-relaxed">
+                                                        <span className="font-bold text-indigo-600 not-italic mr-2">Improvement Guide:</span>
+                                                        {ex.answer}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     };
