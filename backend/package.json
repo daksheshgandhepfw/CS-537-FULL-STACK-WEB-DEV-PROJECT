@@ -23,7 +23,7 @@
     "multer": "^2.0.2",
     "pdf-parse": "^1.1.1",
     "pg": "^8.18.0",
-    "aimock-common": "1.0.3"
+    "aimock-common": "1.0.4"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
