@@ -11,7 +11,7 @@
   "dependencies": {
     "@google/genai": "^1.39.0",
     "@openrouter/sdk": "*",
-    "aimock-common": "1.0.1",
+    "aimock-common": "1.0.3",
     "classnames": "2.5.1",
     "prop-types": "15.8.1",
     "react": "18.2.0",
