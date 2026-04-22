@@ -33,7 +33,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Authentication failed');
+      setError(err.message || 'Authentication failed ');
     }
   };
 
