@@ -3,12 +3,12 @@ import { ScheduledInterview, Report } from 'aimock-common';
 
 export class ScheduledInterviewModel {
     static async create(data: Omit<ScheduledInterview, 'id' | 'createdAt'>): Promise<ScheduledInterview> {
-        const { userId, companyName, jobTitle, jobDescription, scheduledAt } = data;
+        const { userId, companyName, jobTitle, jobDescription, scheduledAt, parentInterviewId } = data;
         const result = await pool.query(
-            `INSERT INTO scheduled_interviews (user_id, company_name, job_title, job_description, scheduled_at, created_at)
-             VALUES ($1, $2, $3, $4, $5, NOW())
+            `INSERT INTO scheduled_interviews (user_id, company_name, job_title, job_description, scheduled_at, parent_interview_id, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, NOW())
              RETURNING *`,
-            [userId, companyName, jobTitle, jobDescription, scheduledAt]
+            [userId, companyName, jobTitle, jobDescription, scheduledAt, parentInterviewId || null]
         );
         const row = result.rows[0];
         return {
@@ -18,7 +18,9 @@ export class ScheduledInterviewModel {
             jobTitle: row.job_title,
             jobDescription: row.job_description,
             scheduledAt: row.scheduled_at,
-            createdAt: row.created_at
+            createdAt: row.created_at,
+            feedback: row.feedback,
+            parentInterviewId: row.parent_interview_id
         };
     }
 
@@ -34,7 +36,9 @@ export class ScheduledInterviewModel {
             jobTitle: row.job_title,
             jobDescription: row.job_description,
             scheduledAt: row.scheduled_at,
-            createdAt: row.created_at
+            createdAt: row.created_at,
+            feedback: row.feedback,
+            parentInterviewId: row.parent_interview_id
         }));
     }
 
@@ -52,7 +56,9 @@ export class ScheduledInterviewModel {
             jobTitle: row.job_title,
             jobDescription: row.job_description,
             scheduledAt: row.scheduled_at,
-            createdAt: row.created_at
+            createdAt: row.created_at,
+            feedback: row.feedback,
+            parentInterviewId: row.parent_interview_id
         };
     }
 
@@ -161,8 +167,16 @@ export class ScheduledInterviewModel {
             weaknesses: Array.from(allWeaknesses),
             strengths: Array.from(allStrengths),
             studyPlan: Array.from(allStudyPlan).slice(0, 8),
-            starExamples: allStarExamples.slice(0, 5) // Limit to top examples
+            starExamples: Array.from(allStarExamples).slice(0, 5) // Limit to top examples
         };
+    }
+
+    static async updateFeedback(id: string | number, feedback: any): Promise<boolean> {
+        const result = await pool.query(
+            'UPDATE scheduled_interviews SET feedback = $1 WHERE id = $2',
+            [JSON.stringify(feedback), id]
+        );
+        return (result.rowCount ?? 0) > 0;
     }
 
     static async getSessions(id: string | number): Promise<any[]> {

@@ -9,6 +9,13 @@ export interface User {
     created_at?: Date;
 }
 
+export interface InterviewFeedback {
+    actualTime?: string;
+    outcome: 'passed' | 'failed' | 'pending' | 'follow-up';
+    experience: string;
+    submittedAt: string | Date;
+}
+
 export interface ScheduledInterview {
     id: string;
     userId: string | number;
@@ -17,6 +24,8 @@ export interface ScheduledInterview {
     jobDescription: string;
     scheduledAt: string | Date;
     createdAt?: Date;
+    feedback?: InterviewFeedback;
+    parentInterviewId?: string | number;
 }
 
 export interface InterviewPlanQuestion {
