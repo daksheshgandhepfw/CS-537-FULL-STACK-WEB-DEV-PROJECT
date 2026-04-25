@@ -92,4 +92,20 @@ router.get('/:id/sessions', async (req: Request, res: Response) => {
     }
 });
 
+// PATCH update feedback
+router.patch('/:id/feedback', async (req: Request, res: Response) => {
+    try {
+        // Verify ownership
+        const session = await ScheduledInterviewModel.findById(req.params.id);
+        if (!session) return res.status(404).json({ message: 'Interview not found' });
+        if (session.userId != (req as any).user.id) return res.status(403).json({ message: 'Unauthorized' });
+
+        const result = await ScheduledInterviewModel.updateFeedback(req.params.id, req.body);
+        if (!result) return res.status(404).json({ message: 'Interview not found' });
+        res.status(200).json({ message: 'Feedback updated successfully' });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 export default router;

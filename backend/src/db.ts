@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 // Load env vars if not already loaded
-dotenv.config({ path: path.join(__dirname, '../.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -42,8 +42,10 @@ const connectDB = async () => {
         try {
             await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS company_name VARCHAR(255);`);
             await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS job_title VARCHAR(255);`);
+            await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS feedback JSONB;`);
+            await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS parent_interview_id INTEGER REFERENCES scheduled_interviews(id);`);
         } catch (e) {
-            console.log('Columns company_name/job_title already exist or could not be added');
+            console.log('Columns company_name/job_title/feedback/parent_interview_id already exist or could not be added');
         }
 
         // Initialize Sessions Table

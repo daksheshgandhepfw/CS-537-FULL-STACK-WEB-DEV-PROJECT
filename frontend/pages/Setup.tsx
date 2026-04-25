@@ -18,6 +18,7 @@ export const Setup: React.FC = () => {
     difficulty: Difficulty.MEDIUM,
     duration: 30
   });
+  const [parentFeedback, setParentFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     const pending = sessionStorage.getItem('pendingScheduledInterview');
@@ -31,6 +32,16 @@ export const Setup: React.FC = () => {
           jobTitle: inv.jobTitle || prev.jobTitle,
           jobDescription: inv.jobDescription
         }));
+
+        if (inv.parentInterviewId) {
+          db.getScheduledInterviewById(inv.parentInterviewId.toString())
+            .then(parent => {
+              if (parent.feedback) {
+                setParentFeedback(parent.feedback.experience);
+              }
+            })
+            .catch(console.error);
+        }
       } catch (e) {
         console.error("Failed to parse pending interview");
       }
@@ -55,7 +66,8 @@ export const Setup: React.FC = () => {
         formData.resume,
         formData.companyName,
         formData.companyPack,
-        formData.type
+        formData.type,
+        parentFeedback || undefined
       );
 
       const newSessionPayload = {
