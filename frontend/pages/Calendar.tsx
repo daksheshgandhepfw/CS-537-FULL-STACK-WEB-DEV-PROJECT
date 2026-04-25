@@ -153,32 +153,37 @@ export const Calendar: React.FC = () => {
 
     const renderReadiness = (invId: string) => {
         const report = reports[invId];
-        if (!report) return null;
+        // Ensure report has overallScores and is not just an error message
+        if (!report || report.message || !report.overallScores) return null;
 
+        const scores = report.overallScores;
         const data = [
-            { name: 'Technical', score: report.technicalScore },
-            { name: 'Soft Skills', score: report.softSkillsScore },
-            { name: 'Experience', score: report.experienceScore },
-            { name: 'Overall', score: report.overallReadiness }
+            { name: 'Comm.', score: Math.round(scores.communication * 20) },
+            { name: 'Role Fit', score: Math.round(scores.role_fit * 20) },
+            { name: 'Technical', score: Math.round(scores.technical_depth * 20) },
+            { name: 'Problem Solv.', score: Math.round(scores.problem_solving * 20) },
+            { name: 'Company Fit', score: Math.round(scores.company_fit * 20) }
         ];
+
+        const avgScore = Math.round(Object.values(scores).reduce((a: any, b: any) => a + b, 0) / Object.values(scores).length * 20);
 
         return (
             <div className="mt-8 bg-slate-50 rounded-2xl p-6 border border-slate-100">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Readiness Report</h4>
-                        <p className="text-xs text-slate-500 mt-1">Based on {report.totalSessions} mock sessions</p>
+                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Cumulative Readiness</h4>
+                        <p className="text-xs text-slate-500 mt-1">Aggregated from {report.interviewCount} sessions</p>
                     </div>
                     <div className="text-right">
-                        <div className="text-2xl font-black text-indigo-600">{report.overallReadiness}%</div>
+                        <div className="text-2xl font-black text-indigo-600">{avgScore}%</div>
                         <div className="text-[10px] font-bold text-slate-400 uppercase">Preparation Score</div>
                     </div>
                 </div>
 
-                <div className="h-48 w-full">
+                <div className="h-48 w-full mb-8">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={data}>
-                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }} />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }} />
                             <Tooltip 
                                 cursor={{ fill: 'transparent' }}
                                 content={({ active, payload }) => {
@@ -194,16 +199,41 @@ export const Calendar: React.FC = () => {
                             />
                             <Bar dataKey="score" radius={[4, 4, 4, 4]} barSize={32}>
                                 {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.score >= 70 ? '#10b981' : entry.score >= 40 ? '#f59e0b' : '#ef4444'} />
+                                    <Cell key={`cell-${index}`} fill={entry.score >= 75 ? '#10b981' : entry.score >= 50 ? '#f59e0b' : '#ef4444'} />
                                 ))}
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">AI Recommendation</div>
-                    <p className="text-xs text-slate-600 leading-relaxed italic">"{report.recommendation}"</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-slate-200">
+                    <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Key Strengths</div>
+                        <div className="space-y-2">
+                            {report.strengths?.slice(0, 3).map((s: string, i: number) => (
+                                <div key={i} className="text-xs text-slate-700 flex items-start gap-2">
+                                    <i className="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
+                                    <span>{s}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Areas for Growth</div>
+                        <div className="space-y-2">
+                            {report.weaknesses?.slice(0, 3).map((w: string, i: number) => (
+                                <div key={i} className="text-xs text-slate-700 flex items-start gap-2">
+                                    <i className="fa-solid fa-circle-exclamation text-amber-500 mt-0.5"></i>
+                                    <span>{w}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-slate-200">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">AI Summary</div>
+                    <p className="text-xs text-slate-600 leading-relaxed italic">"{report.summary}"</p>
                 </div>
             </div>
         );

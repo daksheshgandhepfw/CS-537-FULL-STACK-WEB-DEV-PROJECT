@@ -9,4 +9,5 @@ export interface CreateSessionPayload {
     type: string;
     difficulty: string;
     duration: number;
+    scheduledInterviewId?: string | number;
 }
