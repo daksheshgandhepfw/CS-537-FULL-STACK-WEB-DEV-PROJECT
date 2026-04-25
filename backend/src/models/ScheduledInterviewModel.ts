@@ -20,7 +20,7 @@ export class ScheduledInterviewModel {
             scheduledAt: row.scheduled_at,
             createdAt: row.created_at,
             feedback: row.feedback,
-            parentInterviewId: row.parent_interview_id
+            parentInterviewId: row.parent_interview_id ? row.parent_interview_id.toString() : undefined
         };
     }
 
@@ -38,7 +38,7 @@ export class ScheduledInterviewModel {
             scheduledAt: row.scheduled_at,
             createdAt: row.created_at,
             feedback: row.feedback,
-            parentInterviewId: row.parent_interview_id
+            parentInterviewId: row.parent_interview_id ? row.parent_interview_id.toString() : undefined
         }));
     }
 
@@ -58,7 +58,7 @@ export class ScheduledInterviewModel {
             scheduledAt: row.scheduled_at,
             createdAt: row.created_at,
             feedback: row.feedback,
-            parentInterviewId: row.parent_interview_id
+            parentInterviewId: row.parent_interview_id ? row.parent_interview_id.toString() : undefined
         };
     }
 
