@@ -11,7 +11,7 @@ import scheduledInterviewRoutes from './routes/scheduledInterviewRoutes';
 import path from 'path';
 
 // Load env from root
-dotenv.config({ path: path.join(__dirname, '../.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const app: Express = express();
 const port = process.env.PORT || 5500;

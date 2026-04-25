@@ -70,7 +70,8 @@ export const geminiService = {
     resume: string,
     company: string,
     pack: CompanyPack,
-    type: InterviewType
+    type: InterviewType,
+    previousExperience?: string
   ): Promise<InterviewPlan> {
     const strategy = COMPANY_STRATEGIES[pack] || COMPANY_STRATEGIES[CompanyPack.GENERAL];
     const prompt = `
@@ -79,6 +80,10 @@ export const geminiService = {
       Interview Type: ${type}
       Job Description: ${jd}
       Candidate Resume: ${resume}
+
+      ${previousExperience ? `IMPORTANT CONTEXT: The candidate has already completed a previous round of interviews for this role/company. 
+      Their previous experience/feedback: "${previousExperience}". 
+      Please ensure this new interview plan is a progressive follow-up that avoids repeating basic questions and instead probes deeper based on this context.` : ''}
 
       Company Specific Strategy: ${strategy}
 
