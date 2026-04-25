@@ -58,13 +58,18 @@ export const Report: React.FC<{ id: string }> = ({ id }) => {
     </div>
   );
 
+  const normalize = (val: number) => (val > 5 ? val / (val > 10 ? 20 : 2) : val);
+  const scores = report.overallScores;
+  
   const scoreData = [
-    { name: 'Comm.', val: report.overallScores.communication },
-    { name: 'Role Fit', val: report.overallScores.role_fit },
-    { name: 'Tech', val: report.overallScores.technical_depth },
-    { name: 'Problem', val: report.overallScores.problem_solving },
-    { name: 'Comp.', val: report.overallScores.company_fit },
+    { name: 'Comm.', val: normalize(scores.communication) },
+    { name: 'Role Fit', val: normalize(scores.role_fit) },
+    { name: 'Tech', val: normalize(scores.technical_depth) },
+    { name: 'Problem', val: normalize(scores.problem_solving) },
+    { name: 'Comp.', val: normalize(scores.company_fit) },
   ];
+
+  const overallScore = scoreData.reduce((acc, curr) => acc + curr.val, 0) / 5;
 
   const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
 
@@ -111,8 +116,7 @@ export const Report: React.FC<{ id: string }> = ({ id }) => {
             <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
               <span className="text-slate-500 text-sm">Overall Quality</span>
               <span className="text-2xl font-black text-indigo-600">
-                {/* Fix: Cast Object.values to number[] and type reduce parameters to fix arithmetic operator errors */}
-                {((Object.values(report.overallScores) as number[]).reduce((a: number, b: number) => a + b, 0) / 5).toFixed(1)}/5
+                {overallScore.toFixed(1)}/5
               </span>
             </div>
           </div>

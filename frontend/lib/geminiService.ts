@@ -351,7 +351,7 @@ export const geminiService = {
 
   async generateFinalReport(session: InterviewSession): Promise<any> {
     const transcript = session.turns.map(t => `${t.role}: ${t.text}`).join('\n');
-    const prompt = `Analyze transcript:\n${transcript}`;
+    const prompt = `Analyze transcript:\n${transcript}\n\nIMPORTANT: For overallScores, rate the candidate from 1 to 5 for each category.`;
 
     if (USE_OPENROUTER) {
       const schema = `{
