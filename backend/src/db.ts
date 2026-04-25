@@ -43,7 +43,7 @@ const connectDB = async () => {
             await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS company_name VARCHAR(255);`);
             await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS job_title VARCHAR(255);`);
             await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS feedback JSONB;`);
-            await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS parent_interview_id INTEGER REFERENCES scheduled_interviews(id);`);
+            await pool.query(`ALTER TABLE scheduled_interviews ADD COLUMN IF NOT EXISTS parent_interview_id INTEGER REFERENCES scheduled_interviews(id) ON DELETE SET NULL;`);
         } catch (e) {
             console.log('Columns company_name/job_title/feedback/parent_interview_id already exist or could not be added');
         }
