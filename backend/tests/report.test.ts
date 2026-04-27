@@ -1,4 +1,3 @@
-
 // Mock Auth Middleware
 jest.mock('../src/middleware/auth', () => {
     return (req: any, res: any, next: any) => {
@@ -38,6 +37,7 @@ describe('Report CRUD Operations', () => {
     });
 
     describe('GET /api/reports/:sessionId', () => {
+        // Test case: should return a report for a valid session owned by the user
         it('should return a report for a valid session owned by the user', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 1 });
             (ReportModel.findBySessionId as jest.Mock).mockResolvedValue({ id: 1, summary: 'Test Summary' });
@@ -47,6 +47,7 @@ describe('Report CRUD Operations', () => {
             expect(res.body).toHaveProperty('summary', 'Test Summary');
         });
 
+        // Test case: should return 403 if user does not own session
         it('should return 403 if user does not own session', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 2 });
 
@@ -55,6 +56,7 @@ describe('Report CRUD Operations', () => {
             expect(res.body.message).toBe('Unauthorized');
         });
 
+        // Test case: should return 404 if report not found
         it('should return 404 if report not found', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 1 });
             (ReportModel.findBySessionId as jest.Mock).mockResolvedValue(null);
@@ -63,11 +65,21 @@ describe('Report CRUD Operations', () => {
             expect(res.status).toBe(404);
             expect(res.body.message).toBe('Report not found');
         });
+
+        // Test case: should return 500 when fetching report fails
+        it('should return 500 when fetching report fails', async () => {
+            (InterviewSessionModel.findById as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+            const res = await request(app).get('/api/reports/123');
+            expect(res.status).toBe(500);
+            expect(res.body.message).toBe('DB error');
+        });
     });
 
     describe('POST /api/reports', () => {
         const mockReportData = { sessionId: '123', summary: 'New Report' };
 
+        // Test case: should create a new report if none exists
         it('should create a new report if none exists', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 1 });
             (ReportModel.findBySessionId as jest.Mock).mockResolvedValue(null);
@@ -79,6 +91,7 @@ describe('Report CRUD Operations', () => {
             expect(ReportModel.create).toHaveBeenCalled();
         });
 
+        // Test case: should update an existing report
         it('should update an existing report', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 1 });
             (ReportModel.findBySessionId as jest.Mock).mockResolvedValue({ id: 1 });
@@ -89,6 +102,7 @@ describe('Report CRUD Operations', () => {
             expect(ReportModel.update).toHaveBeenCalled();
         });
 
+        // Test case: should return 404 if session does not exist
         it('should return 404 if session does not exist', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue(null);
 
@@ -97,15 +111,32 @@ describe('Report CRUD Operations', () => {
             expect(res.body.message).toBe('Session not found');
         });
 
+        // Test case: should return 403 if user does not own session
         it('should return 403 if user does not own session', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 2 });
 
             const res = await request(app).post('/api/reports').send(mockReportData);
             expect(res.status).toBe(403);
         });
+
+        // Test case: should return 400 when report save fails
+        it('should return 400 when report save fails', async () => {
+            (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 1 });
+            (ReportModel.findBySessionId as jest.Mock).mockResolvedValue(null);
+            (ReportModel.create as jest.Mock).mockRejectedValue(new Error('Save failed'));
+
+            const res = await request(app).post('/api/reports').send({
+                sessionId: '123',
+                summary: 'Test',
+            });
+
+            expect(res.status).toBe(400);
+            expect(res.body.message).toBe('Save failed');
+        });
     });
 
     describe('DELETE /api/reports/:sessionId', () => {
+        // Test case: should delete a report owned by the user
         it('should delete a report owned by the user', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 1 });
             (ReportModel.delete as jest.Mock).mockResolvedValue(true);
@@ -115,6 +146,7 @@ describe('Report CRUD Operations', () => {
             expect(res.body.message).toBe('Report deleted successfully');
         });
 
+        // Test case: should return 404 if report not found during deletion
         it('should return 404 if report not found during deletion', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 1 });
             (ReportModel.delete as jest.Mock).mockResolvedValue(false);
@@ -124,6 +156,7 @@ describe('Report CRUD Operations', () => {
             expect(res.body.message).toBe('Report not found');
         });
 
+        // Test case: should return 404 if session does not exist
         it('should return 404 if session does not exist', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue(null);
 
@@ -132,12 +165,23 @@ describe('Report CRUD Operations', () => {
             expect(res.body.message).toBe('Session not found');
         });
 
+        // Test case: should return 403 if user does not own session
         it('should return 403 if user does not own session', async () => {
             (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 2 });
 
             const res = await request(app).delete('/api/reports/123');
             expect(res.status).toBe(403);
             expect(res.body.message).toBe('Unauthorized');
+        });
+
+        // Test case: should return 500 when report delete fails unexpectedly
+        it('should return 500 when report delete fails unexpectedly', async () => {
+            (InterviewSessionModel.findById as jest.Mock).mockResolvedValue({ userId: 1 });
+            (ReportModel.delete as jest.Mock).mockRejectedValue(new Error('Delete failed'));
+
+            const res = await request(app).delete('/api/reports/123');
+            expect(res.status).toBe(500);
+            expect(res.body.message).toBe('Delete failed');
         });
     });
 });

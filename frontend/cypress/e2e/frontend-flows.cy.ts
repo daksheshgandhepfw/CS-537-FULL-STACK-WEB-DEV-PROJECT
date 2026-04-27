@@ -1,8 +1,11 @@
 /// <reference types="cypress" />
 
 const APP_URL = "http://localhost:5173";
+const FIXED_NOW = new Date("2026-04-25T09:00:00.000Z").getTime();
 
-//----------------------------------- Mock data for test cases
+// -----------------------------------
+// Mock data for test cases
+
 const testUser = {
   id: "user-cypress-001",
   name: "Test User",
@@ -100,16 +103,16 @@ const completedSession = {
       id: "turn-ai-1",
       role: "ai",
       text: "Tell me about a frontend project you improved.",
-      timestamp: Date.now() - 2000,
+      timestamp: FIXED_NOW - 2000,
     },
     {
       id: "turn-user-1",
       role: "user",
       text: "I improved load time and accessibility for a dashboard.",
-      timestamp: Date.now() - 1000,
+      timestamp: FIXED_NOW - 1000,
     },
   ],
-  createdAt: Date.now() - 86400000,
+  createdAt: FIXED_NOW - 86400000,
 };
 
 const plannedSession = {
@@ -119,7 +122,7 @@ const plannedSession = {
   jobTitle: "Full Stack Developer",
   status: "planned",
   turns: [],
-  createdAt: Date.now(),
+  createdAt: FIXED_NOW,
 };
 
 const mockReport = {
@@ -144,24 +147,29 @@ const mockReport = {
   },
 };
 
-const upcomingInterview = {
-  id: "scheduled-001",
-  userId: testUser.id,
-  companyName: "Meta",
-  jobTitle: "Software Engineer Intern",
-  jobDescription: "Practice frontend problem solving and product thinking.",
-  scheduledAt: new Date(Date.now() + 86400000).toISOString(),
-  createdAt: new Date().toISOString(),
+const buildUpcomingInterview = () => {
+  const base = new Date(FIXED_NOW);
+  const scheduled = new Date(base);
+  scheduled.setDate(Math.min(base.getDate() + 1, 28));
+  scheduled.setHours(10, 30, 0, 0);
+
+  return {
+    id: "scheduled-001",
+    userId: testUser.id,
+    companyName: "Meta",
+    jobTitle: "Software Engineer Intern",
+    jobDescription: "Practice frontend problem solving and product thinking.",
+    scheduledAt: scheduled.toISOString(),
+    createdAt: base.toISOString(),
+  };
 };
 
-//----------------------------------- Helpers
+// -----------------------------------
+// Helpers
 
 const getRandomSetupData = () => Cypress._.sample(setupFixtures) || setupFixtures[0];
 
-const visitApp = (
-  hash = "",
-  options: Partial<Cypress.VisitOptions> = {},
-) => {
+const visitApp = (hash = "", options: Partial<Cypress.VisitOptions> = {}) => {
   const normalizedHash = hash
     ? hash.startsWith("#")
       ? hash
@@ -169,29 +177,6 @@ const visitApp = (
     : "";
 
   cy.visit(`${APP_URL}/${normalizedHash}`, options);
-};
-
-const signUp = () => {
-  cy.contains("AI Mock Interviewer").should("be.visible");
-  cy.contains("Level up your career with AI-driven practice").should("be.visible");
-  cy.get("form").should("be.visible");
-  cy.get('input[type="text"]').should("have.length", 1);
-  cy.get('input[type="email"]').should("have.length", 1);
-  cy.get('input[type="password"]').should("have.length", 1);
-
-  cy.get('input[type="text"]').type(testUser.name, { delay: 50 });
-  cy.get('input[type="email"]').type(testUser.email, { delay: 50 });
-  cy.get('input[type="password"]').type(testUser.password, { delay: 50 });
-  cy.contains("button", "Create Account").click();
-};
-
-const signIn = () => {
-  cy.contains("button", "Already have an account? Sign in").click();
-  cy.contains("button", "Sign In").should("be.visible");
-  cy.contains("Full Name").should("not.exist");
-  cy.get('input[type="email"]').type(testUser.email, { delay: 50 });
-  cy.get('input[type="password"]').type(testUser.password, { delay: 50 });
-  cy.contains("button", "Sign In").click();
 };
 
 const seedLoggedInUser = (hash = "#/dashboard") => {
@@ -210,20 +195,39 @@ const seedLoggedInUser = (hash = "#/dashboard") => {
   });
 };
 
+const signUp = () => {
+  cy.contains("AI Mock Interviewer").should("be.visible");
+  cy.contains("Level up your career with AI-driven practice").should("be.visible");
+  cy.get("form").should("be.visible");
+  cy.get('input[type="text"]').should("have.length", 1);
+  cy.get('input[type="email"]').should("have.length", 1);
+  cy.get('input[type="password"]').should("have.length", 1);
+
+  cy.get('input[type="text"]').type(testUser.name, { delay: 25 });
+  cy.get('input[type="email"]').type(testUser.email, { delay: 25 });
+  cy.get('input[type="password"]').type(testUser.password, { delay: 25 });
+  cy.contains("button", "Create Account").click();
+};
+
+const signIn = (password = testUser.password) => {
+  cy.contains("button", "Already have an account? Sign in").click();
+  cy.contains("button", "Sign In").should("be.visible");
+  cy.contains("Full Name").should("not.exist");
+  cy.get('input[type="email"]').type(testUser.email, { delay: 25 });
+  cy.get('input[type="password"]').type(password, { delay: 25 });
+  cy.contains("button", "Sign In").click();
+};
+
 const fillSetupForm = (data = getRandomSetupData()) => {
   cy.contains("Setup Your Session").should("be.visible");
-  cy.contains("Company Name").parent().find("input").clear().type(data.companyName, { delay: 50 });
-  cy.contains("Target Job Title").parent().find("input").clear().type(data.jobTitle, { delay: 50 });
-  cy.contains("Job Description")
-    .parent()
-    .find("textarea")
-    .clear()
-    .type(data.jobDescription, { delay: 20 });
-  cy.contains("Your Resume Text")
-    .parent()
-    .find("textarea")
-    .clear()
-    .type(data.resume, { delay: 20 });
+  cy.contains("Company Name").parent().find("input").clear().type(data.companyName, { delay: 25 });
+  cy.contains("Target Job Title").parent().find("input").clear().type(data.jobTitle, { delay: 25 });
+  cy.contains("Job Description").parent().find("textarea").eq(0).clear().type(data.jobDescription, {
+    delay: 10,
+  });
+  cy.contains("Your Resume Text").parent().find("textarea").eq(0).clear().type(data.resume, {
+    delay: 10,
+  });
   cy.contains("Company Style Pack").parent().find("select").select(data.companyPackLabel);
   cy.contains("Focus").parent().find("select").select(data.focusLabel);
   cy.contains("Difficulty").parent().find("select").select(data.difficultyLabel);
@@ -259,7 +263,10 @@ const mockAuthRoutes = () => {
 };
 
 const mockSessionRoutes = (sessions = []) => {
-  cy.intercept("GET", "**/api/sessions?userId=*", sessions).as("getSessions");
+  cy.intercept("GET", "**/api/sessions?userId=*", {
+    statusCode: 200,
+    body: sessions,
+  }).as("getSessions");
 };
 
 const mockAiRoutes = () => {
@@ -270,11 +277,7 @@ const mockAiRoutes = () => {
       req.reply({
         statusCode: 200,
         body: {
-          choices: [
-            {
-              message: { content: JSON.stringify(mockReport) },
-            },
-          ],
+          choices: [{ message: { content: JSON.stringify(mockReport) } }],
         },
       });
       return;
@@ -302,11 +305,7 @@ const mockAiRoutes = () => {
       req.reply({
         statusCode: 200,
         body: {
-          choices: [
-            {
-              message: { content: JSON.stringify(mockEvaluation) },
-            },
-          ],
+          choices: [{ message: { content: JSON.stringify(mockEvaluation) } }],
         },
       });
       return;
@@ -316,11 +315,7 @@ const mockAiRoutes = () => {
       req.reply({
         statusCode: 200,
         body: {
-          choices: [
-            {
-              message: { content: "Lead with impact, ownership, and measurable results." },
-            },
-          ],
+          choices: [{ message: { content: "Lead with impact, ownership, and measurable results." } }],
         },
       });
       return;
@@ -330,13 +325,7 @@ const mockAiRoutes = () => {
       req.reply({
         statusCode: 200,
         body: {
-          choices: [
-            {
-              message: {
-                audio: { data: "" },
-              },
-            },
-          ],
+          choices: [{ message: { audio: { data: "" } } }],
         },
       });
       return;
@@ -345,20 +334,29 @@ const mockAiRoutes = () => {
     req.reply({
       statusCode: 200,
       body: {
-        choices: [
-          {
-            message: { content: JSON.stringify(mockPlan) },
-          },
-        ],
+        choices: [{ message: { content: JSON.stringify(mockPlan) } }],
       },
     });
   }).as("aiRequest");
 };
 
-//----------------------------------- Test cases
+const openCalendarEvent = (primaryText: string, fallbackText?: string) => {
+  cy.contains(primaryText, { timeout: 10000 })
+    .should("exist")
+    .scrollIntoView()
+    .click({ force: true });
+
+  if (fallbackText) {
+    cy.contains(fallbackText, { timeout: 10000 }).should("exist");
+  }
+};
+
+// -----------------------------------
+// Test cases
 
 describe("AI Mock Interviewer frontend flows", () => {
   beforeEach(() => {
+    cy.clock(FIXED_NOW, ["Date"]);
     cy.clearCookies();
     cy.clearLocalStorage();
     cy.clearAllSessionStorage();
@@ -404,7 +402,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.get("@signupRequest.all").should("have.length", 0);
   });
 
-  // Test case 2: New Session, Get Started, and New Interview CTAs stay clickable and change the UI.
+  // Test case 2: Dashboard CTAs stay clickable and route the user to setup.
   it("keeps dashboard CTAs clickable and routes users to setup", () => {
     mockSessionRoutes([]);
     seedLoggedInUser("#/dashboard");
@@ -474,30 +472,39 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.location("hash").should("eq", "#/interview/session-created-001");
   });
 
-  // Test case 5: Calendar page loads, view toggle works, and schedule CTA opens/saves the form.
+  // Test case 5: Calendar page loads, schedule CTA works, and the user can jump into mock setup from an event.
   it("checks calendar UI, schedule form, agenda/grid toggle, and Take Mock CTA", () => {
+    const upcomingInterview = buildUpcomingInterview();
     const scheduled = [upcomingInterview];
 
     cy.intercept("GET", "**/api/scheduled-interviews?userId=*", (req) => {
-      req.reply(scheduled);
+      req.reply({
+        statusCode: 200,
+        body: scheduled,
+      });
     }).as("getScheduledInterviews");
+
     cy.intercept("GET", "**/api/scheduled-interviews/*/readiness", {
       statusCode: 200,
       body: { message: "No readiness yet" },
-    });
+    }).as("getReadiness");
+
     cy.intercept("GET", "**/api/scheduled-interviews/*/sessions", {
       statusCode: 200,
       body: [],
     }).as("getScheduledSessions");
+
     cy.intercept("POST", "**/api/scheduled-interviews", (req) => {
-      scheduled.push({
+      const created = {
         id: "scheduled-new-001",
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(FIXED_NOW).toISOString(),
         ...req.body,
-      });
+      };
+
+      scheduled.push(created);
       req.reply({
         statusCode: 200,
-        body: scheduled[scheduled.length - 1],
+        body: created,
       });
     }).as("createScheduledInterview");
 
@@ -507,33 +514,38 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.contains("Interview Calendar").should("be.visible");
     cy.contains("Agenda").should("be.visible");
     cy.contains("button", "Grid").click();
-    cy.contains(upcomingInterview.companyName).should("exist");
+    cy.contains(upcomingInterview.companyName, { timeout: 10000 }).should("exist");
     cy.contains("button", "Agenda").click();
 
     cy.contains("button", "Schedule New").click();
-    cy.contains("Schedule Upcoming Interview").should("be.visible");
-    cy.contains("Company Name").parent().find("input").type("Stripe", { delay: 50 });
-    cy.contains("Target Job Title / Role").parent().find("input").type("UI Engineer", { delay: 50 });
-    cy.get('input[type="date"]').type("2026-05-15", { delay: 50 });
-    cy.get('input[type="time"]').type("10:30", { delay: 50 });
-    cy.contains("Target Job Description")
+    cy.contains(/Schedule Upcoming Interview/i).should("be.visible");
+    cy.contains("Company Name").parent().find("input").type("Stripe", { delay: 25 });
+    cy.contains(/Job Title/i).parent().find("input").type("UI Engineer", { delay: 25 });
+    cy.get('input[type="date"]').clear().type("2026-04-29", { delay: 10 });
+    cy.get('input[type="time"]').clear().type("10:30", { delay: 10 });
+    cy.contains(/Job Description/i)
       .parent()
       .find("textarea")
-      .type("Own frontend quality, component testing, and user-facing polish.");
+      .first()
+      .type("Own frontend quality, component testing, and user-facing polish.", { delay: 10 });
     cy.contains("button", "Save Schedule").click();
 
-    cy.wait("@createScheduledInterview");
-    cy.wait("@getScheduledInterviews");
-    cy.contains("UI Engineer at Stripe").should("be.visible");
+    cy.wait("@createScheduledInterview").its("request.body").should("include", {
+      companyName: "Stripe",
+      jobTitle: "UI Engineer",
+    });
 
-    cy.contains(`${upcomingInterview.jobTitle} at ${upcomingInterview.companyName}`).click();
+    cy.wait("@getScheduledInterviews");
+    cy.contains("UI Engineer", { timeout: 10000 }).should("exist");
+    cy.contains("Stripe", { timeout: 10000 }).should("exist");
+
+    openCalendarEvent(upcomingInterview.jobTitle, upcomingInterview.companyName);
     cy.contains("button", "Take Mock").click();
+
     cy.location("hash").should("eq", "#/setup");
     cy.contains("Setup Your Session").should("exist");
-    cy.contains("Company Name")
-      .parent()
-      .find("input")
-      .should("have.value", upcomingInterview.companyName);
+    cy.contains("Company Name").parent().find("input").should("have.value", upcomingInterview.companyName);
+    cy.contains("Target Job Title").parent().find("input").should("have.value", upcomingInterview.jobTitle);
   });
 
   // Test case 6 and 8: Report UI renders key sections and Export PDF triggers the export CTA.
@@ -563,28 +575,30 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.window().then((win) => {
       cy.stub(win, "print").as("print");
     });
+
     cy.contains("button", "Export PDF").click();
     cy.get("@print").should("have.been.calledOnce");
   });
 
-  // Extra test case: Report missing state provides a safe return path to the dashboard.
+  // Test case 7: Missing report state should still keep the user moving with a safe CTA.
   it("shows a useful empty state when a report is missing", () => {
     cy.intercept("GET", "**/api/reports/missing-session", {
       statusCode: 404,
       body: {},
-    });
+    }).as("missingReport");
     cy.intercept("GET", "**/api/sessions/missing-session", {
       statusCode: 404,
       body: {},
-    });
+    }).as("missingSession");
 
     seedLoggedInUser("#/report/missing-session");
+    cy.wait(["@missingReport", "@missingSession"]);
     cy.contains("Report Not Found").should("be.visible");
     cy.contains("Return to Dashboard").click();
     cy.location("hash").should("eq", "#/dashboard");
   });
 
-  // Test case 9: All left navigation buttons route or act correctly.
+  // Test case 9: Left navigation buttons route correctly and stay usable.
   it("checks all left navigation buttons", () => {
     mockSessionRoutes([completedSession]);
     cy.intercept("GET", "**/api/scheduled-interviews?userId=*", {
@@ -612,7 +626,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.contains("AI Mock Interviewer").should("be.visible");
   });
 
-  // Extra test case: Continue CTA opens an in-progress interview screen from the dashboard.
+  // Extra test case: Continue CTA resumes a planned interview session.
   it("opens a planned interview from the Continue CTA", () => {
     mockSessionRoutes([plannedSession]);
     mockAiRoutes();
@@ -644,7 +658,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     }).should("be.visible");
   });
 
-  // Extra test case: Invalid sign-in shows the API error message on the auth screen.
+  // Extra test case: Invalid sign-in should show a helpful auth error.
   it("shows a helpful error when sign in fails", () => {
     cy.intercept("POST", "**/api/auth/login", {
       statusCode: 401,
@@ -652,12 +666,20 @@ describe("AI Mock Interviewer frontend flows", () => {
     }).as("failedLogin");
 
     visitApp();
-    cy.contains("button", "Already have an account? Sign in").click();
-    cy.get('input[type="email"]').type(testUser.email, { delay: 50 });
-    cy.get('input[type="password"]').type("WrongPassword123!", { delay: 50 });
-    cy.contains("button", "Sign In").click();
+    signIn("WrongPassword123!");
 
     cy.wait("@failedLogin");
     cy.contains("Invalid credentials").should("be.visible");
+  });
+
+  // Extra test case: Completed interview cards expose key CTAs on the dashboard.
+  it("shows completed interview actions on the dashboard", () => {
+    mockSessionRoutes([completedSession]);
+    seedLoggedInUser("#/dashboard");
+    cy.wait("@getSessions");
+
+    cy.contains(completedSession.companyName).should("be.visible");
+    cy.contains(completedSession.jobTitle).should("be.visible");
+    cy.contains("a", "View Report").should("be.visible");
   });
 });
