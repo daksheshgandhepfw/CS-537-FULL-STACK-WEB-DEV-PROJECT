@@ -249,6 +249,14 @@ export const db = {
         return await response.json();
     },
 
+    getScheduledInterviewById: async (id: string): Promise<import('aimock-common').ScheduledInterview> => {
+        const response = await fetch(`${API_URL}/scheduled-interviews/${id}`, {
+            headers: db.getHeaders(),
+        });
+        if (!response.ok) throw new Error('Failed to fetch scheduled interview');
+        return await response.json();
+    },
+
     deleteScheduledInterview: async (id: string) => {
         const response = await fetch(`${API_URL}/scheduled-interviews/${id}`, {
             method: 'DELETE',
@@ -271,6 +279,16 @@ export const db = {
             headers: db.getHeaders(),
         });
         if (!response.ok) throw new Error('Failed to fetch mock sessions');
+        return await response.json();
+    },
+
+    updateScheduledInterviewFeedback: async (id: string, feedback: any) => {
+        const response = await fetch(`${API_URL}/scheduled-interviews/${id}/feedback`, {
+            method: 'PATCH',
+            headers: db.getHeaders(),
+            body: JSON.stringify(feedback),
+        });
+        if (!response.ok) throw new Error('Failed to update feedback');
         return await response.json();
     }
 };

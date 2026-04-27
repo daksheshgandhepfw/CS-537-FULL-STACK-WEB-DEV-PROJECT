@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aimock-common": "file:../common",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
@@ -23,8 +24,7 @@
     "mongoose": "^8.3.0",
     "multer": "^2.0.2",
     "pdf-parse": "^1.1.1",
-    "pg": "^8.18.0",
-    "aimock-common": "1.0.4"
+    "pg": "^8.18.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
