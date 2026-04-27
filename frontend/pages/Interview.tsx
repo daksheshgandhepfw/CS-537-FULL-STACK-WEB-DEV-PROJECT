@@ -45,7 +45,14 @@ export const Interview: React.FC<{ id: string }> = ({ id }) => {
       }
 
       setSession(currentSession);
-      setTimeLeft(currentSession.duration * 60);
+      
+      let initialTimeLeft = currentSession.duration * 60;
+      if (currentSession.turns && currentSession.turns.length > 0) {
+        const firstTurnTime = currentSession.turns[0].timestamp;
+        const elapsedSeconds = Math.floor((Date.now() - firstTurnTime) / 1000);
+        initialTimeLeft = Math.max(0, initialTimeLeft - elapsedSeconds);
+      }
+      setTimeLeft(initialTimeLeft);
 
       if (currentSession.turns.length === 0 && !startupRef.current) {
         startupRef.current = true;
