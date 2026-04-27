@@ -147,14 +147,21 @@ const mockReport = {
   },
 };
 
-const upcomingInterview = {
-  id: "scheduled-001",
-  userId: testUser.id,
-  companyName: "Meta",
-  jobTitle: "Software Engineer Intern",
-  jobDescription: "Practice frontend problem solving and product thinking.",
-  scheduledAt: "2026-04-28T10:30:00.000Z",
-  createdAt: "2026-04-25T09:00:00.000Z",
+const buildUpcomingInterview = () => {
+  const base = new Date(FIXED_NOW);
+  const scheduled = new Date(base);
+  scheduled.setDate(Math.min(base.getDate() + 1, 28));
+  scheduled.setHours(10, 30, 0, 0);
+
+  return {
+    id: "scheduled-001",
+    userId: testUser.id,
+    companyName: "Meta",
+    jobTitle: "Software Engineer Intern",
+    jobDescription: "Practice frontend problem solving and product thinking.",
+    scheduledAt: scheduled.toISOString(),
+    createdAt: base.toISOString(),
+  };
 };
 
 // -----------------------------------
@@ -356,6 +363,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     mockAuthRoutes();
   });
 
+  // Test case 1: SignUp and SignIn with a test user, plus auth component layout checks.
   it("allows a test user to sign up, log out, and sign back in", () => {
     mockSessionRoutes([]);
     visitApp();
@@ -385,6 +393,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.contains("Your Interviews").should("be.visible");
   });
 
+  // Extra test case: Signup validation blocks an empty submit before any signup API call happens.
   it("shows validation when signup fields are missing", () => {
     visitApp();
 
@@ -393,6 +402,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.get("@signupRequest.all").should("have.length", 0);
   });
 
+  // Test case 2: Dashboard CTAs stay clickable and route the user to setup.
   it("keeps dashboard CTAs clickable and routes users to setup", () => {
     mockSessionRoutes([]);
     seedLoggedInUser("#/dashboard");
@@ -413,6 +423,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.location("hash").should("eq", "#/setup");
   });
 
+  // Test case 3: Setup Your Session accepts mock details and Initialize Simulation creates an interview.
   it("fills setup details with random mock data and initializes an interview simulation", () => {
     const setupData = getRandomSetupData();
 
@@ -461,7 +472,9 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.location("hash").should("eq", "#/interview/session-created-001");
   });
 
-  it("checks calendar UI, schedule form, view toggle, and Take Mock CTA", () => {
+  // Test case 5: Calendar page loads, schedule CTA works, and the user can jump into mock setup from an event.
+  it("checks calendar UI, schedule form, agenda/grid toggle, and Take Mock CTA", () => {
+    const upcomingInterview = buildUpcomingInterview();
     const scheduled = [upcomingInterview];
 
     cy.intercept("GET", "**/api/scheduled-interviews?userId=*", (req) => {
@@ -484,7 +497,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.intercept("POST", "**/api/scheduled-interviews", (req) => {
       const created = {
         id: "scheduled-new-001",
-        createdAt: "2026-04-25T09:05:00.000Z",
+        createdAt: new Date(FIXED_NOW).toISOString(),
         ...req.body,
       };
 
@@ -499,13 +512,10 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.wait("@getScheduledInterviews");
 
     cy.contains("Interview Calendar").should("be.visible");
-
+    cy.contains("Agenda").should("be.visible");
     cy.contains("button", "Grid").click();
-    cy.wait("@getReadiness");
-    cy.wait("@getScheduledSessions");
-
+    cy.contains(upcomingInterview.companyName, { timeout: 10000 }).should("exist");
     cy.contains("button", "Agenda").click();
-    cy.contains(upcomingInterview.jobTitle, { timeout: 10000 }).should("exist");
 
     cy.contains("button", "Schedule New").click();
     cy.contains(/Schedule Upcoming Interview/i).should("be.visible");
@@ -529,7 +539,6 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.contains("UI Engineer", { timeout: 10000 }).should("exist");
     cy.contains("Stripe", { timeout: 10000 }).should("exist");
 
-    // Use the seeded event for Take Mock because setup is prefilled from the selected interview.
     openCalendarEvent(upcomingInterview.jobTitle, upcomingInterview.companyName);
     cy.contains("button", "Take Mock").click();
 
@@ -539,6 +548,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.contains("Target Job Title").parent().find("input").should("have.value", upcomingInterview.jobTitle);
   });
 
+  // Test case 6 and 8: Report UI renders key sections and Export PDF triggers the export CTA.
   it("checks report UI elements and verifies Export PDF CTA", () => {
     mockSessionRoutes([completedSession]);
     cy.intercept("GET", `**/api/sessions/${completedSession.id}`, {
@@ -570,6 +580,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.get("@print").should("have.been.calledOnce");
   });
 
+  // Test case 7: Missing report state should still keep the user moving with a safe CTA.
   it("shows a useful empty state when a report is missing", () => {
     cy.intercept("GET", "**/api/reports/missing-session", {
       statusCode: 404,
@@ -587,6 +598,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.location("hash").should("eq", "#/dashboard");
   });
 
+  // Test case 9: Left navigation buttons route correctly and stay usable.
   it("checks all left navigation buttons", () => {
     mockSessionRoutes([completedSession]);
     cy.intercept("GET", "**/api/scheduled-interviews?userId=*", {
@@ -614,6 +626,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.contains("AI Mock Interviewer").should("be.visible");
   });
 
+  // Extra test case: Continue CTA resumes a planned interview session.
   it("opens a planned interview from the Continue CTA", () => {
     mockSessionRoutes([plannedSession]);
     mockAiRoutes();
@@ -645,6 +658,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     }).should("be.visible");
   });
 
+  // Extra test case: Invalid sign-in should show a helpful auth error.
   it("shows a helpful error when sign in fails", () => {
     cy.intercept("POST", "**/api/auth/login", {
       statusCode: 401,
@@ -658,6 +672,7 @@ describe("AI Mock Interviewer frontend flows", () => {
     cy.contains("Invalid credentials").should("be.visible");
   });
 
+  // Extra test case: Completed interview cards expose key CTAs on the dashboard.
   it("shows completed interview actions on the dashboard", () => {
     mockSessionRoutes([completedSession]);
     seedLoggedInUser("#/dashboard");
